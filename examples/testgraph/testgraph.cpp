@@ -39,7 +39,22 @@ int main(int argc, char* argv[]) {
     instagram_network->AddEdge(source, dest, no_like);
   }
   std::cout << "Done Loading Graph!\n";
+  
+  std::cout << "Start Calculating Statistics...\n";
 
+  std::cout << "Done Calculating Statistics!\n";
+
+  std::cout << "Start Checking Friendship Properties...\n";
+  int worse_than_friends = 0;
+  std::vector<int> total_likes[GRAPH_SIZE];
+  for (auto it = instagram_network->BegNI();
+       it < instagram_network->EndNI(); it++) {
+    for (int e = 0; e < it.GetOutDeg(); e++) {
+      total_likes[it.GetOutNId(e)].push_back(
+          instagram_network->GetEDat(it.GetId(), it.GetOutNId(e)));
+    }
+  } 
+  std::cout << "Done Checking Friendship Properties!\n";
   //// what type of graph do you want to use?
   typedef PUNGraph PGraph; // undirected graph
   //typedef PNGraph PGraph;  //   directed graph
