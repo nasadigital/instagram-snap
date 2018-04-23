@@ -1,0 +1,9 @@
+#
+# Random graph on 1000 nodes. G(100, 1000) (Fri Apr 20 16:34:54 2018)
+#
+# Number of hops, h	Reachable pairs of nodes inside h hops in WCC
+0	100
+1	1874.87
+2	7804.27
+3	7923.18
+4	7923.18
