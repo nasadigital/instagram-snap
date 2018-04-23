@@ -1,0 +1,6 @@
+Input	../as20graph.txt
+Command line options
+Loglikelihood	-159688.80
+Absolute error (based on expected number of edges)	0.012940
+RunTime	54.9702
+Estimated initiator	[0.968757, 0.580137; 0.580116, 0.0727401]
