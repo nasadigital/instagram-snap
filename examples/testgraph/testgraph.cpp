@@ -76,6 +76,8 @@ int main(int argc, char* argv[]) {
   for (auto it = instagram_network->BegNI();
        it < instagram_network->EndNI(); it++) {
     std::vector<int> friend_likes;
+    int my_likes = accumulate(total_likes[it.GetId()].begin(),
+                              total_likes[it.GetId()].end(), 0);
     for (int e = 0; e < it.GetOutDeg(); e++) {
       friend_likes.push_back(
           accumulate(total_likes[it.GetOutNId(e)].begin(),
@@ -83,13 +85,20 @@ int main(int argc, char* argv[]) {
     }
     if (friend_likes.size()) {
       ++total_with_friends;
-      if (friend_likes[it.GetId()] < get_average(friend_likes))
+      if (my_likes < get_average(friend_likes))
         ++friends_weak;
-      if (friend_likes[it.GetId()] < get_median(friend_likes))
+      if (my_likes < get_median(friend_likes))
         ++friends_strong;
     }
+    //if (it.GetId() < 10) {
+    //  std::cout << it.GetId() << " : " << my_likes << "\n";
+    //  for (auto item : friend_likes)
+    //    std::cout << item << " ";
+    //  std::cout << "\n Average is: " << get_average(friend_likes) << "\n"
+    //            << "Median is: " << get_median(friend_likes) << "\n";
+    //}
   }
-  std::cout << "Friendship paradox (weak) : " << friends_weak << " / "
+  std::cout << "Friendship paradox (weak)   : " << friends_weak << " / "
             << total_with_friends << " - "
             << (100.0 * friends_weak) / total_with_friends << "%\n";
   std::cout << "Friendship paradox (strong) : " << friends_strong << " / "
