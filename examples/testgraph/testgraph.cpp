@@ -4,6 +4,27 @@
 
 typedef unsigned int uint;
 
+void export_map(std::map<int, int> tree_map, std::string filename) {
+  std::ofstream fout(filename);
+  for (auto it : tree_map)
+    fout << it.first << "," << it.second << "\n";
+  fout.close();
+}
+
+void export_hm(TIntFltH hm, std::string filename) {
+  std::ofstream fout(filename);
+  for (auto it = hm.BegI(); it < hm.EndI(); it++)
+    fout << it.GetKey() << "," << it.GetDat() << "\n";
+  fout.close();
+}
+
+void export_vector(std::vector<double> ar, std::string filename) {
+  std::ofstream fout(filename);
+  for (auto it : ar)
+    fout << it << "\n";
+  fout.close();
+}
+
 double get_average(std::vector<int> ar) {
   double sum = 0;
   for (auto it : ar)
@@ -72,7 +93,7 @@ int main(int argc, char* argv[]) {
           instagram_network->GetEDat(it.GetId(), it.GetOutNId(e)));
     }
   } 
-
+  int c = 0;
   for (auto it = instagram_network->BegNI();
        it < instagram_network->EndNI(); it++) {
     std::vector<int> friend_likes;
@@ -90,13 +111,15 @@ int main(int argc, char* argv[]) {
       if (my_likes < get_median(friend_likes))
         ++friends_strong;
     }
-    //if (it.GetId() < 10) {
-    //  std::cout << it.GetId() << " : " << my_likes << "\n";
-    //  for (auto item : friend_likes)
-    //    std::cout << item << " ";
-    //  std::cout << "\n Average is: " << get_average(friend_likes) << "\n"
-    //            << "Median is: " << get_median(friend_likes) << "\n";
-    //}
+    if (false && my_likes < get_average(friend_likes) &&
+        my_likes >= get_median(friend_likes)) {
+      c++;
+      std::cout << it.GetId() << " : " << my_likes << "\n";
+      for (auto item : friend_likes)
+        std::cout << item << " ";
+      std::cout << "\nAverage is: " << get_average(friend_likes) << "\n"
+                << "Median is: " << get_median(friend_likes) << "\n";
+    }
   }
   std::cout << "Friendship paradox (weak)   : " << friends_weak << " / "
             << total_with_friends << " - "
@@ -106,5 +129,18 @@ int main(int argc, char* argv[]) {
             << (100.0 * friends_strong) / total_with_friends << "%\n";
 
   std::cout << "Done Checking Friendship Properties!\n";
+  std::cout << "Starting to Export Data...\n";
+  std::map<int, int> hm;
+  for (int ctr1 = 0; ctr1 < GRAPH_SIZE; ++ctr1) {
+    hm[instagram_network->GetNI(ctr1).GetInDeg()]++;
+  }
+//    cumulated.push_back(accumulate(total_likes[ctr1].begin(),
+//                                   total_likes[ctr1].end(), 0));
+//  export_vector(cumulated, "BetweennessCentrality.csv");
+//  TIntFltH hm;
+//  TSnap::GetEigenVectorCentr(instagram_network, hm);
+  
+  export_map(hm, "indegree_cmp.csv");
+  std::cout << "Done Exporting Data!\n";
   return 0;
 }
