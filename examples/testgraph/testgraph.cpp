@@ -77,6 +77,14 @@ int main(int argc, char* argv[]) {
     TInt no_like(std::stoi(split_line[2]));
     instagram_network->AddEdge(source, dest, no_like);
   }
+  std::vector<int> pictures_posted(GRAPH_SIZE); 
+  std::ifstream fin2("media.csv");
+  getline(fin2, line);
+  while(getline(fin2, line)) {
+    std::vector<std::string> split_line = split(line, ';');
+    pictures_posted[std::stoi(split_line[1])]++;
+  }
+
   std::cout << "Done Loading Graph!\n";
   
   std::cout << "Start Calculating Statistics...\n";
@@ -99,10 +107,13 @@ int main(int argc, char* argv[]) {
     std::vector<int> friend_likes;
     int my_likes = accumulate(total_likes[it.GetId()].begin(),
                               total_likes[it.GetId()].end(), 0);
+    my_likes = instagram_network->GetNI(it.GetId()).GetInDeg();
+    my_likes = pictures_posted[it.GetId()];
     for (int e = 0; e < it.GetOutDeg(); e++) {
-      friend_likes.push_back(
-          accumulate(total_likes[it.GetOutNId(e)].begin(),
-                     total_likes[it.GetOutNId(e)].end(), 0));
+      friend_likes.push_back(pictures_posted[it.GetOutNId(e)]);
+//          instagram_network->GetNI(it.GetOutNId(e)).GetInDeg());
+//          accumulate(total_likes[it.GetOutNId(e)].begin(),
+//                     total_likes[it.GetOutNId(e)].end(), 0));
     }
     if (friend_likes.size()) {
       ++total_with_friends;
@@ -132,7 +143,7 @@ int main(int argc, char* argv[]) {
   std::cout << "Starting to Export Data...\n";
   std::map<int, int> hm;
   for (int ctr1 = 0; ctr1 < GRAPH_SIZE; ++ctr1) {
-    hm[instagram_network->GetNI(ctr1).GetInDeg()]++;
+    hm[pictures_posted[ctr1]]++;
   }
 //    cumulated.push_back(accumulate(total_likes[ctr1].begin(),
 //                                   total_likes[ctr1].end(), 0));
@@ -140,7 +151,7 @@ int main(int argc, char* argv[]) {
 //  TIntFltH hm;
 //  TSnap::GetEigenVectorCentr(instagram_network, hm);
   
-  export_map(hm, "indegree_cmp.csv");
+  export_map(hm, "media_posted_cmp.csv");
   std::cout << "Done Exporting Data!\n";
   return 0;
 }
