@@ -78,6 +78,7 @@ int main(int argc, char* argv[]) {
   typedef TNodeEDatNet<TInt, TInt> WeightedGraph;
   TPt<WeightedGraph> instagram_network = WeightedGraph::New();
   PropertyBase* pBase;
+  bool only_seed = get_flag_value("--only_seed", argc, argv) == "true";
   std::string selected_property = get_flag_value("--property", argc, argv);
   if (selected_property == "indegree") {
     pBase = new PropertyInDegree(GRAPH_SIZE);
@@ -94,14 +95,14 @@ int main(int argc, char* argv[]) {
   } else if (selected_property == "media") {
     pBase = new PropertyMedia(GRAPH_SIZE); 
   } else {
-    std::cout << "Incorrect usage: No such property or no property provided\n";
+    std::cout << "Incorrect usage: No such property or no property provided.\n";
     return -1;
   }
   std::cout << "Random address: " << pBase << "\n";
   std::cout << "Loading Graph...\n";
   std::ifstream fin("users.csv");
   std::string line;
-  std::set<int> hash_set;
+  std::unordered_set<int> seed_user;
   getline(fin, line);
   while (getline(fin, line)) {
     std::vector<std::string> split_line = split(line, ';'); 
@@ -113,12 +114,11 @@ int main(int argc, char* argv[]) {
     TInt no_like(std::stoi(split_line[2]));
     instagram_network->AddEdge(source, dest, no_like);
   }
-  std::vector<int> pictures_posted(GRAPH_SIZE); 
   std::ifstream fin2("media.csv");
   getline(fin2, line);
   while(getline(fin2, line)) {
     std::vector<std::string> split_line = split(line, ';');
-    pictures_posted[std::stoi(split_line[1])]++;
+    seed_user.insert(std::stoi(split_line[1]));
     pBase->process_medialine(split_line);
   }
 
@@ -135,9 +135,13 @@ int main(int argc, char* argv[]) {
 
   for (auto it = instagram_network->BegNI();
        it < instagram_network->EndNI(); it++) {
+    if (only_seed && !seed_user.count(it.GetId()))
+      continue;
     std::vector<int> friend_props;
     int my_prop = property_tidy[it.GetId()];
     for (int e = 0; e < it.GetOutDeg(); e++) {
+      if (only_seed && !seed_user.count(it.GetId()))
+        continue;
       friend_props.push_back(property_tidy[it.GetOutNId(e)]);
     }
     if (friend_props.size()) {
@@ -171,6 +175,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Starting to Export Data...\n";
     std::map<int, int> hm;
     for (int ctr1 = 0; ctr1 < GRAPH_SIZE; ++ctr1) {
+      if (only_seed && !seed_user.count(ctr1))
+        continue;
       hm[property_tidy[ctr1]]++;
     }
     export_map(hm, export_data_filename);
