@@ -60,23 +60,25 @@ std::vector<std::string> split(std::string &s, char delim) {
   return rez;
 }
 
-std::string get_flag_value(char* input) {
-  std::string command(input);
-  std::vector<std::string> split_line = split(command, '=');
-  if (split_line.size() == 1)
-    return "";
-  return split_line[1];
+std::string get_flag_value(
+    std::string parametar_name, int argc, char* argv[]) {
+  for (int ctr1 = argc - 1; ctr1 >= 0; --ctr1) {
+    std::string command(argv[ctr1]);
+    std::vector<std::string> split_line = split(command, '=');
+    if (split_line[0] == parametar_name) {
+      if (split_line.size() == 1)
+        return "true";
+      return split_line[1];
+    }
+  }
+  return "";
 }
 
 int main(int argc, char* argv[]) {
   typedef TNodeEDatNet<TInt, TInt> WeightedGraph;
   TPt<WeightedGraph> instagram_network = WeightedGraph::New();
   PropertyBase* pBase;
-  if (argc < 2) {
-    std::cout << "Not enough parameters provided\n";
-    return -1;
-  }
-  std::string selected_property = get_flag_value(argv[1]);
+  std::string selected_property = get_flag_value("--property", argc, argv);
   if (selected_property == "indegree") {
     pBase = new PropertyInDegree(GRAPH_SIZE);
   } else if (selected_property == "outdegree") {
@@ -92,7 +94,7 @@ int main(int argc, char* argv[]) {
   } else if (selected_property == "media") {
     pBase = new PropertyMedia(GRAPH_SIZE); 
   } else {
-    std::cout << "Incorrect usage: No such property\n";
+    std::cout << "Incorrect usage: No such property or no property provided\n";
     return -1;
   }
   std::cout << "Random address: " << pBase << "\n";
@@ -163,13 +165,16 @@ int main(int argc, char* argv[]) {
             << (100.0 * friends_strong) / total_with_friends << "%\n";
 
   std::cout << "Done Checking Friendship Properties!\n";
-  std::cout << "Starting to Export Data...\n";
-  std::map<int, int> hm;
-  for (int ctr1 = 0; ctr1 < GRAPH_SIZE; ++ctr1) {
-    hm[property_tidy[ctr1]]++;
+  std::string export_data_filename = get_flag_value("--output_file",
+                                                    argc, argv);
+  if (export_data_filename != "") {
+    std::cout << "Starting to Export Data...\n";
+    std::map<int, int> hm;
+    for (int ctr1 = 0; ctr1 < GRAPH_SIZE; ++ctr1) {
+      hm[property_tidy[ctr1]]++;
+    }
+    export_map(hm, export_data_filename);
+    std::cout << "Done Exporting Data!\n";
   }
-  
-  export_map(hm, "media_posted_cmp.csv");
-  std::cout << "Done Exporting Data!\n";
   return 0;
 }
