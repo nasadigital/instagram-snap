@@ -8,6 +8,9 @@ To build the code you need to execute the following commands
 ```
 cd ./examples/testgraph
 make
-./testgraph
+```
+After building the code, you can execute it like this
+```
+./testgraph --property=inlikes --only_seed
 ```
 Make sure you have provide the data sets in the same folder (./examples/testgraph)
