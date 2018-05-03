@@ -3,6 +3,6 @@
 
 ## Main application file
 MAIN = testgraph
-DEPH = 
-DEPCPP = 
+DEPH = property.h 
+DEPCPP = property.cpp 
 

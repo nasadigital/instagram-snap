@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include "property.h"
 #include "stdafx.h"
 #define GRAPH_SIZE 44766
 
@@ -59,10 +60,42 @@ std::vector<std::string> split(std::string &s, char delim) {
   return rez;
 }
 
+std::string get_flag_value(char* input) {
+  std::string command(input);
+  std::vector<std::string> split_line = split(command, '=');
+  if (split_line.size() == 1)
+    return "";
+  return split_line[1];
+}
+
 int main(int argc, char* argv[]) {
   typedef TNodeEDatNet<TInt, TInt> WeightedGraph;
   TPt<WeightedGraph> instagram_network = WeightedGraph::New();
-  
+  PropertyBase* pBase;
+  if (argc < 2) {
+    std::cout << "Not enough parameters provided\n";
+    return -1;
+  }
+  std::string selected_property = get_flag_value(argv[1]);
+  if (selected_property == "indegree") {
+    pBase = new PropertyInDegree(GRAPH_SIZE);
+  } else if (selected_property == "outdegree") {
+    pBase = new PropertyOutDegree(GRAPH_SIZE); 
+  } else if (selected_property == "inlikes") {
+    pBase = new PropertyInLikes(GRAPH_SIZE); 
+  } else if (selected_property == "outlikes") {
+    pBase = new PropertyOutLikes(GRAPH_SIZE); 
+  } else if (selected_property == "incomments") {
+    pBase = new PropertyInComments(GRAPH_SIZE); 
+  } else if (selected_property == "outcomments") {
+    pBase = new PropertyOutComments(GRAPH_SIZE); 
+  } else if (selected_property == "media") {
+    pBase = new PropertyMedia(GRAPH_SIZE); 
+  } else {
+    std::cout << "Incorrect usage: No such property\n";
+    return -1;
+  }
+  std::cout << "Random address: " << pBase << "\n";
   std::cout << "Loading Graph...\n";
   std::ifstream fin("users.csv");
   std::string line;
@@ -70,6 +103,7 @@ int main(int argc, char* argv[]) {
   getline(fin, line);
   while (getline(fin, line)) {
     std::vector<std::string> split_line = split(line, ';'); 
+    pBase->process_userline(split_line);
     int source = std::stoi(split_line[0]);  
     int dest = std::stoi(split_line[1]);  
     while (std::max(source, dest) >= instagram_network->GetMxNId())
@@ -83,6 +117,7 @@ int main(int argc, char* argv[]) {
   while(getline(fin2, line)) {
     std::vector<std::string> split_line = split(line, ';');
     pictures_posted[std::stoi(split_line[1])]++;
+    pBase->process_medialine(split_line);
   }
 
   std::cout << "Done Loading Graph!\n";
@@ -93,43 +128,31 @@ int main(int argc, char* argv[]) {
 
   std::cout << "Start Checking Friendship Properties...\n";
   int friends_weak = 0, friends_strong = 0, total_with_friends = 0;
-  std::vector<int> total_likes[GRAPH_SIZE];
-  for (auto it = instagram_network->BegNI();
-       it < instagram_network->EndNI(); it++) {
-    for (int e = 0; e < it.GetOutDeg(); e++) {
-      total_likes[it.GetOutNId(e)].push_back(
-          instagram_network->GetEDat(it.GetId(), it.GetOutNId(e)));
-    }
-  } 
+  std::vector<int> property_tidy = pBase -> get_properties();
   int c = 0;
+
   for (auto it = instagram_network->BegNI();
        it < instagram_network->EndNI(); it++) {
-    std::vector<int> friend_likes;
-    int my_likes = accumulate(total_likes[it.GetId()].begin(),
-                              total_likes[it.GetId()].end(), 0);
-    my_likes = instagram_network->GetNI(it.GetId()).GetInDeg();
-    my_likes = pictures_posted[it.GetId()];
+    std::vector<int> friend_props;
+    int my_prop = property_tidy[it.GetId()];
     for (int e = 0; e < it.GetOutDeg(); e++) {
-      friend_likes.push_back(pictures_posted[it.GetOutNId(e)]);
-//          instagram_network->GetNI(it.GetOutNId(e)).GetInDeg());
-//          accumulate(total_likes[it.GetOutNId(e)].begin(),
-//                     total_likes[it.GetOutNId(e)].end(), 0));
+      friend_props.push_back(property_tidy[it.GetOutNId(e)]);
     }
-    if (friend_likes.size()) {
+    if (friend_props.size()) {
       ++total_with_friends;
-      if (my_likes < get_average(friend_likes))
+      if (my_prop < get_average(friend_props))
         ++friends_weak;
-      if (my_likes < get_median(friend_likes))
+      if (my_prop < get_median(friend_props))
         ++friends_strong;
     }
-    if (false && my_likes < get_average(friend_likes) &&
-        my_likes >= get_median(friend_likes)) {
+    if (false && my_prop < get_average(friend_props) &&
+        my_prop >= get_median(friend_props)) {
       c++;
-      std::cout << it.GetId() << " : " << my_likes << "\n";
-      for (auto item : friend_likes)
+      std::cout << it.GetId() << " : " << my_prop << "\n";
+      for (auto item : friend_props)
         std::cout << item << " ";
-      std::cout << "\nAverage is: " << get_average(friend_likes) << "\n"
-                << "Median is: " << get_median(friend_likes) << "\n";
+      std::cout << "\nAverage is: " << get_average(friend_props) << "\n"
+                << "Median is: " << get_median(friend_props) << "\n";
     }
   }
   std::cout << "Friendship paradox (weak)   : " << friends_weak << " / "
@@ -143,13 +166,8 @@ int main(int argc, char* argv[]) {
   std::cout << "Starting to Export Data...\n";
   std::map<int, int> hm;
   for (int ctr1 = 0; ctr1 < GRAPH_SIZE; ++ctr1) {
-    hm[pictures_posted[ctr1]]++;
+    hm[property_tidy[ctr1]]++;
   }
-//    cumulated.push_back(accumulate(total_likes[ctr1].begin(),
-//                                   total_likes[ctr1].end(), 0));
-//  export_vector(cumulated, "BetweennessCentrality.csv");
-//  TIntFltH hm;
-//  TSnap::GetEigenVectorCentr(instagram_network, hm);
   
   export_map(hm, "media_posted_cmp.csv");
   std::cout << "Done Exporting Data!\n";
