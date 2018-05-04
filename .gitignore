@@ -3,4 +3,6 @@ examples/testgraph/testgraph
 
 # Ignore .csv
 *.csv
+*.plt
+*.png
 *.swp
