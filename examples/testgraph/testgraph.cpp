@@ -31,23 +31,27 @@ std::string get_flag_value(
 int main(int argc, char* argv[]) {
   typedef TNodeEDatNet<TInt, TInt> WeightedGraph;
   TPt<WeightedGraph> instagram_network = WeightedGraph::New();
-  PropertyBase* pBase;
+  PropertyBase* base_prop;
   bool only_seed = get_flag_value("--only_seed", argc, argv) == "true";
   std::string selected_property = get_flag_value("--property", argc, argv);
   if (selected_property == "indegree") {
-    pBase = new PropertyInDegree(GRAPH_SIZE);
+    base_prop = new PropertyInDegree(GRAPH_SIZE);
   } else if (selected_property == "outdegree") {
-    pBase = new PropertyOutDegree(GRAPH_SIZE); 
+    base_prop = new PropertyOutDegree(GRAPH_SIZE); 
   } else if (selected_property == "inlikes") {
-    pBase = new PropertyInLikes(GRAPH_SIZE); 
+    base_prop = new PropertyInLikes(GRAPH_SIZE); 
   } else if (selected_property == "outlikes") {
-    pBase = new PropertyOutLikes(GRAPH_SIZE); 
+    base_prop = new PropertyOutLikes(GRAPH_SIZE); 
   } else if (selected_property == "incomments") {
-    pBase = new PropertyInComments(GRAPH_SIZE); 
+    base_prop = new PropertyInComments(GRAPH_SIZE); 
   } else if (selected_property == "outcomments") {
-    pBase = new PropertyOutComments(GRAPH_SIZE); 
+    base_prop = new PropertyOutComments(GRAPH_SIZE); 
   } else if (selected_property == "media") {
-    pBase = new PropertyMedia(GRAPH_SIZE); 
+    base_prop = new PropertyMedia(GRAPH_SIZE); 
+  } else if (selected_property == "tags") {
+    base_prop = new PropertyTags(GRAPH_SIZE); 
+  } else if (selected_property == "unique_tags") {
+    base_prop = new PropertyUniqTags(GRAPH_SIZE); 
   } else {
     std::cout << "Incorrect usage: No such property or no property provided.\n";
     return -1;
@@ -59,7 +63,7 @@ int main(int argc, char* argv[]) {
   getline(fin, line);
   while (getline(fin, line)) {
     std::vector<std::string> split_line = split(line, ';'); 
-    pBase->process_userline(split_line);
+    base_prop->process_userline(split_line);
     int source = std::stoi(split_line[0]);  
     int dest = std::stoi(split_line[1]);  
     while (std::max(source, dest) >= instagram_network->GetMxNId())
@@ -72,7 +76,7 @@ int main(int argc, char* argv[]) {
   while(getline(fin2, line)) {
     std::vector<std::string> split_line = split(line, ';');
     seed_user.insert(std::stoi(split_line[1]));
-    pBase->process_medialine(split_line);
+    base_prop->process_medialine(split_line);
   }
 
   std::cout << "Done Loading Graph!\n";
@@ -83,7 +87,7 @@ int main(int argc, char* argv[]) {
 
   std::cout << "Start Checking Friendship Properties...\n";
   int friends_weak = 0, friends_strong = 0, total_with_friends = 0;
-  std::vector<int> property_tidy = pBase -> get_properties();
+  std::vector<int> property_tidy = base_prop->get_properties();
   int c = 0;
 
   for (auto it = instagram_network->BegNI();

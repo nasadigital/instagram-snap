@@ -1,3 +1,6 @@
+# Igonre executable
+examples/testgraph/testgraph
+
 # Ignore .csv
 *.csv
 *.swp

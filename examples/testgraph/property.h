@@ -69,3 +69,22 @@ class PropertyMedia : public PropertyBase {
   void process_medialine(std::vector<std::string> split_line); 
   std::vector<int> get_properties() { return media; };
 };
+
+class PropertyTags : public PropertyBase {
+  std::vector<int> tags;
+ public:
+  PropertyTags(int size) { tags.clear(); tags.resize(size); }
+  void process_userline(std::vector<std::string> split_line) {}
+  void process_medialine(std::vector<std::string> split_line); 
+  std::vector<int> get_properties() { return tags; };
+};
+
+class PropertyUniqTags : public PropertyBase {
+  std::unordered_map<int, std::unordered_set<std::string>> unique_tags;
+  std::vector<int> tags;
+ public:
+  PropertyUniqTags(int size) { tags.clear(); tags.resize(size); };
+  void process_userline(std::vector<std::string> split_line) {}
+  void process_medialine(std::vector<std::string> split_line); 
+  std::vector<int> get_properties();
+};
