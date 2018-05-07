@@ -1,5 +1,6 @@
 #include "property.h"
 #include "stdafx.h"
+#include "tagcounter.h"
 #include "util.h"
 
 #include <bits/stdc++.h>
@@ -34,6 +35,7 @@ int main(int argc, char* argv[]) {
   PropertyBase* base_prop;
   bool only_seed = get_flag_value("--only_seed", argc, argv) == "true";
   std::string selected_property = get_flag_value("--property", argc, argv);
+  std::string inspect_tags = get_flag_value("--tag_list", argc, argv);
   if (selected_property == "indegree") {
     base_prop = new PropertyInDegree(GRAPH_SIZE);
   } else if (selected_property == "outdegree") {
@@ -56,6 +58,10 @@ int main(int argc, char* argv[]) {
     std::cout << "Incorrect usage: No such property or no property provided.\n";
     return -1;
   }
+  TagCounter* tag_structure = nullptr;
+  if (inspect_tags != "") {
+    tag_structure = new TagCounter();
+  }
   std::cout << "Loading Graph...\n";
   std::ifstream fin("users.csv");
   std::string line;
@@ -77,6 +83,8 @@ int main(int argc, char* argv[]) {
     std::vector<std::string> split_line = split(line, ';');
     seed_user.insert(std::stoi(split_line[1]));
     base_prop->process_medialine(split_line);
+    if (tag_structure)
+      tag_structure->process_line(split_line);
   }
 
   std::cout << "Done Loading Graph!\n";
@@ -138,6 +146,13 @@ int main(int argc, char* argv[]) {
     }
     export_map(hm, export_data_filename);
     std::cout << "Done Exporting Data!\n";
+  }
+  if (tag_structure) {
+    std::cout << "Starting to Export Tag Timeline...\n";
+    for (auto tag_name : split(inspect_tags, ','))
+      export_timeline(tag_structure->get_timeline(tag_name),
+                      "tagtm_" + tag_name + ".csv");
+    std::cout << "Done Exporting Tag Timeline!\n";
   }
   return 0;
 }

@@ -16,6 +16,18 @@ void export_vector(std::vector<double> ar, std::string filename) {
   fout.close();
 }
 
+void export_timeline(std::vector<std::pair<long long, int>>& vec,
+                     std::string filename) {
+  std::map<long long, int> tree_map;
+  for (auto it : vec) {
+    tree_map[it.first]++;
+  }
+  std::ofstream fout(filename);
+  for (auto it : tree_map)
+    fout << it.first << "," << it.second << "\n";
+  fout.close();
+}
+
 double get_average(std::vector<int> ar) {
   double sum = 0;
   for (auto it : ar)
