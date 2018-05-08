@@ -46,9 +46,9 @@ void TagCounter::export_more_timelines(std::vector<std::string> tags,
   }
   
   std::ofstream fout(filename);
-  fout << "timestamp";
+  fout << "Timestamp";
   for (auto s : tags)
-    fout << "," << s;
+    fout << ",#" << s;
   fout << "\n";
   std::vector<int> cumulative(tags.size());
   for (auto it : timelines) {
