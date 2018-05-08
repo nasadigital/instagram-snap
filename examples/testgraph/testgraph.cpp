@@ -34,12 +34,15 @@ int main(int argc, char* argv[]) {
   TPt<WeightedGraph> instagram_network = WeightedGraph::New();
   PropertyBase* base_prop;
   bool only_seed = get_flag_value("--only_seed", argc, argv) == "true";
+  bool only_first = get_flag_value("--only_first", argc, argv) == "true";
   std::string selected_property = get_flag_value("--property", argc, argv);
   std::string inspect_tags = get_flag_value("--tag_list", argc, argv);
   std::string export_data_filename = get_flag_value("--output_file",
                                                     argc, argv);
   std::string export_tag_occ = get_flag_value("--export_tag_count",
                                               argc, argv);
+  std::string export_chart = get_flag_value("--export_tags_chart", argc, argv);
+  std::string chart_name = get_flag_value("--chart_name", argc, argv);
   if (selected_property == "indegree") {
     base_prop = new PropertyInDegree(GRAPH_SIZE);
   } else if (selected_property == "outdegree") {
@@ -64,7 +67,7 @@ int main(int argc, char* argv[]) {
   }
   TagCounter* tag_structure = nullptr;
   if (inspect_tags != "") {
-    if (get_flag_value("--only_first", argc, argv) == "true")
+    if (only_first)
       tag_structure = new UniqueTagCounter();
     else
       tag_structure = new TagCounter();
@@ -165,6 +168,11 @@ int main(int argc, char* argv[]) {
     } else {
       tag_structure->export_occurances(export_tag_occ);
     }
+  }
+  if (export_chart != "") {
+    std::cout << "Exporting for chart...\n";
+    tag_structure->export_more_timelines(split(export_chart, ','), chart_name);
+    std::cout << "Done exporting for chart!\n";
   }
   return 0;
 }

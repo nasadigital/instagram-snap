@@ -30,6 +30,38 @@ void TagCounter::export_occurances(std::string filename) {
   fout.close();
 }
 
+void TagCounter::export_more_timelines(std::vector<std::string> tags,
+                                       std::string filename) {
+  std::map<long long, std::vector<int>> timelines;
+  for (size_t ctr1 = 0; ctr1 < tags.size(); ++ctr1) {
+    if (!tag_timeline.count(tags[ctr1])) {
+      std::cout << "No tag named: " << tags[ctr1] << "\n";
+      return;
+    }
+    for (auto it : tag_timeline[tags[ctr1]]) {
+      if (!timelines.count(it.first))
+        timelines[it.first].resize(tags.size());
+      ++timelines[it.first][ctr1];
+    }
+  }
+  
+  std::ofstream fout(filename);
+  fout << "timestamp";
+  for (auto s : tags)
+    fout << "," << s;
+  fout << "\n";
+  std::vector<int> cumulative(tags.size());
+  for (auto it : timelines) {
+    fout << it.first;
+    for (size_t ctr1 = 0; ctr1 < it.second.size(); ++ctr1)
+      cumulative[ctr1] += it.second[ctr1];
+    for (auto val : cumulative)
+      fout << "," << val;
+    fout << "\n";
+  }
+  fout.close();
+}
+
 void UniqueTagCounter::process_line(std::vector<std::string> split_line) {
   if (split_line.size() < 7)
     return;
