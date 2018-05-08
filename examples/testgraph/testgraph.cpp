@@ -60,7 +60,10 @@ int main(int argc, char* argv[]) {
   }
   TagCounter* tag_structure = nullptr;
   if (inspect_tags != "") {
-    tag_structure = new TagCounter();
+    if (get_flag_value("--only_first", argc, argv) == "true")
+      tag_structure = new UniqueTagCounter();
+    else
+      tag_structure = new TagCounter();
   }
   std::cout << "Loading Graph...\n";
   std::ifstream fin("users.csv");

@@ -16,7 +16,7 @@ void export_vector(std::vector<double> ar, std::string filename) {
   fout.close();
 }
 
-void export_timeline(std::vector<std::pair<long long, int>>& vec,
+void export_timeline(std::vector<std::pair<long long, int>> vec,
                      std::string filename) {
   std::map<long long, int> tree_map;
   for (auto it : vec) {
