@@ -5,7 +5,7 @@
 #include <bits/stdc++.h>
 
 void TagCounter::process_line(std::vector<std::string> split_line) {
-  if (split_line.size() < 6)
+  if (split_line.size() < 7)
     return;
   int id = stoi(split_line[1]);
   long long ts = stoll(split_line[2]);
@@ -21,6 +21,13 @@ std::vector<std::pair<long long, int>>
     return {};
   }
   return tag_timeline[tag_name];
+}
+
+void TagCounter::export_occurances(std::string filename) { 
+  std::ofstream fout(filename);
+  for (auto it : tag_timeline)
+    fout << it.first << "," << it.second.size() << "\n";
+  fout.close();
 }
 
 std::vector<std::pair<long long, int>>

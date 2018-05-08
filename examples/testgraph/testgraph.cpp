@@ -36,6 +36,10 @@ int main(int argc, char* argv[]) {
   bool only_seed = get_flag_value("--only_seed", argc, argv) == "true";
   std::string selected_property = get_flag_value("--property", argc, argv);
   std::string inspect_tags = get_flag_value("--tag_list", argc, argv);
+  std::string export_data_filename = get_flag_value("--output_file",
+                                                    argc, argv);
+  std::string export_tag_occ = get_flag_value("--export_tag_count",
+                                              argc, argv);
   if (selected_property == "indegree") {
     base_prop = new PropertyInDegree(GRAPH_SIZE);
   } else if (selected_property == "outdegree") {
@@ -137,8 +141,6 @@ int main(int argc, char* argv[]) {
             << (100.0 * friends_strong) / total_with_friends << "%\n";
 
   std::cout << "Done Checking Friendship Properties!\n";
-  std::string export_data_filename = get_flag_value("--output_file",
-                                                    argc, argv);
   if (export_data_filename != "") {
     std::cout << "Starting to Export Data...\n";
     std::map<int, int> hm;
@@ -156,6 +158,13 @@ int main(int argc, char* argv[]) {
       export_timeline(tag_structure->get_timeline(tag_name),
                       "tagtm_" + tag_name + ".csv");
     std::cout << "Done Exporting Tag Timeline!\n";
+  }
+  if (export_tag_occ != "") {
+    if (tag_structure == nullptr) {
+      std::cout << "No tags are inspected! Try using the --tag_list flag\n";
+    } else {
+      tag_structure->export_occurances(export_tag_occ);
+    }
   }
   return 0;
 }

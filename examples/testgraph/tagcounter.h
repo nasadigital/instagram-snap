@@ -8,6 +8,7 @@ class TagCounter {
   void process_line(std::vector<std::string> split_line);
   virtual std::vector<std::pair<long long, int>> get_timeline(
       std::string tag_name);
+  void export_occurances(std::string filename);
 };
 
 class UniqueTagCounter : public TagCounter {
