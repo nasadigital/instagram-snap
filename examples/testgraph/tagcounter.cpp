@@ -9,6 +9,10 @@ void TagCounter::process_line(std::vector<std::string> split_line) {
     return;
   int id = stoi(split_line[1]);
   long long ts = stoll(split_line[2]);
+  if (!joined_on.count(id))
+    joined_on[id] = ts;
+  else
+    joined_on[id] = std::min(joined_on[id], ts);
   for (auto tag : split(split_line[3], ',')) {
     tag_timeline[tag].push_back(std::make_pair(ts, id));
   }
@@ -31,8 +35,12 @@ void TagCounter::export_occurances(std::string filename) {
 }
 
 void TagCounter::export_more_timelines(std::vector<std::string> tags,
-                                       std::string filename) {
+                                       std::string filename, bool normalize) {
   std::map<long long, std::vector<int>> timelines;
+  std::vector<long long> total_users;
+  for (auto it : joined_on)
+    total_users.push_back(it.second);
+  sort(total_users.begin(), total_users.end());
   for (size_t ctr1 = 0; ctr1 < tags.size(); ++ctr1) {
     if (!tag_timeline.count(tags[ctr1])) {
       std::cout << "No tag named: " << tags[ctr1] << "\n";
@@ -51,12 +59,15 @@ void TagCounter::export_more_timelines(std::vector<std::string> tags,
     fout << ",#" << s;
   fout << "\n";
   std::vector<int> cumulative(tags.size());
+  size_t current_users = 0;
   for (auto it : timelines) {
     fout << it.first;
+    while (current_users < total_users.size() && it.first >= total_users[current_users])
+      ++current_users;
     for (size_t ctr1 = 0; ctr1 < it.second.size(); ++ctr1)
       cumulative[ctr1] += it.second[ctr1];
     for (auto val : cumulative)
-      fout << "," << val;
+      fout << "," << (normalize ? 1.0 * val / current_users : val);
     fout << "\n";
   }
   fout.close();
@@ -67,6 +78,10 @@ void UniqueTagCounter::process_line(std::vector<std::string> split_line) {
     return;
   int id = stoi(split_line[1]);
   long long ts = stoll(split_line[2]);
+  if (!joined_on.count(id))
+    joined_on[id] = ts;
+  else
+    joined_on[id] = std::min(joined_on[id], ts);
   for (auto tag : split(split_line[3], ',')) {
     if (first_occ[tag].count(id)) {
        tag_timeline[tag][first_occ[tag][id]].first =

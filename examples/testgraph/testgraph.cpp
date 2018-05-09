@@ -35,6 +35,7 @@ int main(int argc, char* argv[]) {
   PropertyBase* base_prop;
   bool only_seed = get_flag_value("--only_seed", argc, argv) == "true";
   bool only_first = get_flag_value("--only_first", argc, argv) == "true";
+  bool normalize = get_flag_value("--normalize", argc, argv) == "true"; 
   std::string selected_property = get_flag_value("--property", argc, argv);
   std::string inspect_tags = get_flag_value("--tag_list", argc, argv);
   std::string export_data_filename = get_flag_value("--output_file",
@@ -66,12 +67,10 @@ int main(int argc, char* argv[]) {
     return -1;
   }
   TagCounter* tag_structure = nullptr;
-  if (inspect_tags != "") {
-    if (only_first)
-      tag_structure = new UniqueTagCounter();
-    else
-      tag_structure = new TagCounter();
-  }
+  if (only_first)
+    tag_structure = new UniqueTagCounter();   
+  else
+    tag_structure = new TagCounter();
   std::cout << "Loading Graph...\n";
   std::ifstream fin("users.csv");
   std::string line;
@@ -171,7 +170,8 @@ int main(int argc, char* argv[]) {
   }
   if (export_chart != "") {
     std::cout << "Exporting for chart...\n";
-    tag_structure->export_more_timelines(split(export_chart, ','), chart_name);
+    tag_structure->export_more_timelines(split(export_chart, ','), chart_name,
+                                         normalize);
     std::cout << "Done exporting for chart!\n";
   }
   return 0;
