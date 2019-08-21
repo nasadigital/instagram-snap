@@ -36,6 +36,7 @@ int main(int argc, char* argv[]) {
   bool only_seed = get_flag_value("--only_seed", argc, argv) == "true";
   bool only_first = get_flag_value("--only_first", argc, argv) == "true";
   bool normalize = get_flag_value("--normalize", argc, argv) == "true"; 
+  bool reverse_links = get_flag_value("--reverse_links", argc, argv) == "true";
   std::string selected_property = get_flag_value("--property", argc, argv);
   std::string inspect_tags = get_flag_value("--tag_list", argc, argv);
   std::string export_data_filename = get_flag_value("--output_file",
@@ -81,6 +82,8 @@ int main(int argc, char* argv[]) {
     base_prop->process_userline(split_line);
     int source = std::stoi(split_line[0]);  
     int dest = std::stoi(split_line[1]);  
+    if (reverse_links)
+      std::swap(source, dest);
     while (std::max(source, dest) >= instagram_network->GetMxNId())
       instagram_network->AddNode();
     TInt no_like(std::stoi(split_line[2]));
@@ -114,7 +117,7 @@ int main(int argc, char* argv[]) {
     std::vector<int> friend_props;
     int my_prop = property_tidy[it.GetId()];
     for (int e = 0; e < it.GetOutDeg(); e++) {
-      if (only_seed && !seed_user.count(it.GetId()))
+      if (only_seed && !seed_user.count(it.GetOutNId(e)))
         continue;
       friend_props.push_back(property_tidy[it.GetOutNId(e)]);
     }
